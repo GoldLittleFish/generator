@@ -51,12 +51,14 @@ public class ShellRunner {
     private static final String HELP_2 = "-h"; //$NON-NLS-1$
 
     public static void main(String[] args) {
-        if (args.length == 0) {
-            usage();
-            System.exit(0);
+        //1.如果不输入任何参数，打印说明文档
+        if (args.length == 0) {//判断参数长度是否为0
+            usage();//如果长度为0，则将此Main函数的使用方法打印出来
+            System.exit(0);//停止当前JVM,程序结束。 0-正常退出，非0-非正常退出。
             return; // only to satisfy compiler, never returns
         }
 
+        //2.将输入的参数 转换成String，String的Map，便于后面直接根据名字获取
         Map<String, String> arguments = parseCommandLine(args);
 
         if (arguments.containsKey(HELP_1)) {
@@ -153,11 +155,15 @@ public class ShellRunner {
     }
 
     private static void usage() {
+        //getString 是通过import static进来的静态方法，此种写法也是厉害
         String lines = getString("Usage.Lines"); //$NON-NLS-1$
+        //看看message.properties 有多少行, usage 说明
         int intLines = Integer.parseInt(lines);
         for (int i = 0; i < intLines; i++) {
             String key = "Usage." + i; //$NON-NLS-1$
-            writeLine(getString(key));
+            //Usage.1=\   java -jar mybatis-generator-core-x.x.x.jar -configfile file_name
+            //=号后面的\ 不加的话,java会顶格写. 加了，就会有3个空格
+            writeLine(getString(key));//打印说明
         }
     }
 
@@ -172,17 +178,21 @@ public class ShellRunner {
     private static Map<String, String> parseCommandLine(String[] args) {
         List<String> errors = new ArrayList<>();
         Map<String, String> arguments = new HashMap<>();
-
-        for (int i = 0; i < args.length; i++) {
+        //用法： -configfile是变量,file_name是变量值
+        //        java -jar mybatis-generator-core-x.x.x.jar
+        //        -configfile file_name
+        //                [-overwrite] [-contextids ids] [-tables tableNames]
+        //                        [-forceJavaLogging] [-verbose] [-?|-h]
+        for (int i = 0; i < args.length; i++) {//变量总个数
             if (CONFIG_FILE.equalsIgnoreCase(args[i])) {
-                if ((i + 1) < args.length) {
-                    arguments.put(CONFIG_FILE, args[i + 1]);
+                if ((i + 1) < args.length) {// 此处➕1的目的是为了确保args[]是否传东西了，不然后续步骤+1，会越界
+                    arguments.put(CONFIG_FILE, args[i + 1]);// configfile具体路径是在args第二位的
                 } else {
-                    errors.add(getString(
+                    errors.add(getString(//传了-configfile 没有传具体值，需要报错
                             "RuntimeError.19", CONFIG_FILE)); //$NON-NLS-1$
                 }
                 i++;
-            } else if (OVERWRITE.equalsIgnoreCase(args[i])) {
+            } else if (OVERWRITE.equalsIgnoreCase(args[i])) {//不顾大小写的方法equalsIgnoreCase
                 arguments.put(OVERWRITE, "Y"); //$NON-NLS-1$
             } else if (VERBOSE.equalsIgnoreCase(args[i])) {
                 arguments.put(VERBOSE, "Y"); //$NON-NLS-1$
